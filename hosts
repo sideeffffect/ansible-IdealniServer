@@ -1,0 +1,3 @@
+# Dummy inventory for ansible
+IdealniServer ansible_host=idealniserver.idealiste.cz ansible_connection=ssh
+

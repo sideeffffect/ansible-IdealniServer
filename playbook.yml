@@ -1,0 +1,63 @@
+---
+
+- hosts: IdealniServer
+
+  vars:
+    packages_add:
+      - aptitude
+      - docker-ce
+      - fish
+      - glances
+      - ntp
+      - ntpdate
+    packages_repos:
+      - repo: deb https://download.docker.com/linux/ubuntu xenial stable
+        key: "https://download.docker.com/linux/ubuntu/gpg"
+  
+  pre_tasks:
+    - name: Update and upgrade apt packages
+      become: true
+      apt:
+        upgrade: yes
+        update_cache: yes
+        cache_valid_time: 86400 #One day
+  
+  post_tasks:
+    - name: Set default shell and groups
+      become: yes
+      user:
+        name: ondra
+        shell: /usr/bin/fish
+        groups: docker
+        append: yes
+    
+    - name: Fish -- oh-my-fish -- install
+      shell: curl -L http://get.oh-my.fish | fish /dev/stdin --noninteractive --yes
+      args:
+        creates: ~/.config/fish/conf.d/omf.fish
+    
+    - name: Bin directories -- present
+      file:
+        path: '~/.local/bin'
+        state: directory
+    
+    - name: Bin directories -- in PATH
+      lineinfile:
+        line: 'set -g -x PATH {{ item }} $PATH'
+        dest: ~/.config/fish/conf.d/path.fish
+        create: yes
+      with_items:
+        - "$HOME/.local/bin"
+    
+    - name: Environment variables
+      lineinfile:
+        line: 'set -g -x {{ item.name }} {{ item.value }}'
+        dest: ~/.config/fish/conf.d/variables.fish
+        create: yes
+      with_items:
+        - { name: "EDITOR", value: "/usr/bin/vim" }
+  
+  roles:
+    - name: zerotao.packages
+      become: yes
+
