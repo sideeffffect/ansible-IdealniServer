@@ -10,9 +10,12 @@
       - glances
       - ntp
       - ntpdate
+      - python-certbot-nginx
     packages_repos:
       - repo: deb https://download.docker.com/linux/ubuntu xenial stable
         key: "https://download.docker.com/linux/ubuntu/gpg"
+      - repo: deb http://ppa.launchpad.net/certbot/certbot/ubuntu xenial main
+        key: "http://keyserver.ubuntu.com/pks/lookup?op=get&search=0x7BF576066ADA65728FC7E70A8C47BE8E75BCA694"
   
   pre_tasks:
     - name: Update and upgrade apt packages
@@ -34,7 +37,7 @@
     - name: Fish -- oh-my-fish -- install
       shell: curl -L http://get.oh-my.fish | fish /dev/stdin --noninteractive --yes
       args:
-        creates: ~/.config/fish/conf.d/omf.fish
+        creates: ~/.local/share/omf/init.fish
     
     - name: Bin directories -- present
       file:
@@ -56,6 +59,13 @@
         create: yes
       with_items:
         - { name: "EDITOR", value: "/usr/bin/vim" }
+    
+    - name: pure-ftpd -- force TLS
+      become: yes
+      copy:
+        content: |
+          3
+        dest: /etc/pure-ftpd/conf/TLS
   
   roles:
     - name: zerotao.packages
